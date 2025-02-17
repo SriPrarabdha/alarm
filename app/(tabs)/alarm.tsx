@@ -1,17 +1,51 @@
 
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Platform } from 'react-native';
 import { Audio } from 'expo-av';
 import * as DocumentPicker from 'expo-document-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Notifications from 'expo-notifications';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function AlarmScreen() {
   const [sound, setSound] = useState(null);
   const [recording, setRecording] = useState(null);
   const [audioUri, setAudioUri] = useState(null);
-  const [alarmTime, setAlarmTime] = useState(null);
+  const [alarmTime, setAlarmTime] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+  const [isAlarmSet, setIsAlarmSet] = useState(false);
+
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [sound]);
+
+  async function registerForPushNotificationsAsync() {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+  }
 
   async function pickAudio() {
     try {
@@ -63,20 +97,63 @@ export default function AlarmScreen() {
     }
   }
 
-  useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
+  const onTimeChange = (event, selectedDate) => {
+    setShowPicker(false);
+    if (selectedDate) {
+      setAlarmTime(selectedDate);
+    }
+  };
+
+  const setAlarm = async () => {
+    if (!audioUri) {
+      alert('Please select or record an alarm sound first');
+      return;
+    }
+
+    const now = new Date();
+    let triggerTime = new Date(alarmTime);
+
+    if (triggerTime <= now) {
+      triggerTime.setDate(triggerTime.getDate() + 1);
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Alarm',
+        body: 'Wake up!',
+        sound: audioUri,
+      },
+      trigger: {
+        date: triggerTime,
+      },
+    });
+
+    setIsAlarmSet(true);
+    alert('Alarm set successfully!');
+  };
+
+  const cancelAlarm = async () => {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    setIsAlarmSet(false);
+    alert('Alarm cancelled');
+  };
 
   return (
     <ThemedView style={styles.container}>
       <View style={styles.timeContainer}>
-        <ThemedText style={styles.timeText}>
-          {alarmTime ? alarmTime.toLocaleTimeString() : '00:00'}
-        </ThemedText>
+        <TouchableOpacity onPress={() => setShowPicker(true)}>
+          <ThemedText style={styles.timeText}>
+            {alarmTime.toLocaleTimeString().slice(0, 5)}
+          </ThemedText>
+        </TouchableOpacity>
+        {showPicker && (
+          <DateTimePicker
+            value={alarmTime}
+            mode="time"
+            is24Hour={true}
+            onChange={onTimeChange}
+          />
+        )}
       </View>
 
       <View style={styles.controlsContainer}>
@@ -85,7 +162,7 @@ export default function AlarmScreen() {
           onPress={recording ? stopRecording : startRecording}
         >
           <IconSymbol 
-            name={recording ? "chevron.right" : "chevron.right"} 
+            name={recording ? "stop.fill" : "mic.fill"} 
             size={24} 
             color="#fff" 
           />
@@ -95,16 +172,30 @@ export default function AlarmScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={pickAudio}>
-          <IconSymbol name="chevron.right" size={24} color="#fff" />
+          <IconSymbol name="square.and.arrow.up.fill" size={24} color="#fff" />
           <ThemedText style={styles.buttonText}>Upload Sound</ThemedText>
         </TouchableOpacity>
 
         {audioUri && (
           <TouchableOpacity style={styles.button} onPress={playSound}>
-            <IconSymbol name="chevron.right" size={24} color="#fff" />
+            <IconSymbol name="play.fill" size={24} color="#fff" />
             <ThemedText style={styles.buttonText}>Test Sound</ThemedText>
           </TouchableOpacity>
         )}
+
+        <TouchableOpacity 
+          style={[styles.button, isAlarmSet ? styles.cancelButton : styles.setButton]} 
+          onPress={isAlarmSet ? cancelAlarm : setAlarm}
+        >
+          <IconSymbol 
+            name={isAlarmSet ? "bell.slash.fill" : "bell.fill"} 
+            size={24} 
+            color="#fff" 
+          />
+          <ThemedText style={styles.buttonText}>
+            {isAlarmSet ? 'Cancel Alarm' : 'Set Alarm'}
+          </ThemedText>
+        </TouchableOpacity>
       </View>
     </ThemedView>
   );
@@ -122,7 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timeText: {
-    fontSize: 48,
+    fontSize: 64,
     fontWeight: 'bold',
     color: '#ECEDEE',
   },
@@ -137,6 +228,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  setButton: {
+    backgroundColor: '#2D6A4F',
+  },
+  cancelButton: {
+    backgroundColor: '#CF6679',
   },
   buttonText: {
     color: '#ECEDEE',
