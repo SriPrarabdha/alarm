@@ -25,6 +25,12 @@
     "plugins": [
       "expo-router",
       [
+        "@react-native-community/datetimepicker",
+        {
+          "androidPackage": "com.android.providers.media"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",

@@ -1,74 +1,93 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function HomeScreen() {
+  const navigateToAlarm = () => {
+    router.push('/alarm');
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome to Expo on Replit!</ThemedText>
-        <HelloWave />
+    <ThemedView style={styles.container}>
+      <ThemedView style={styles.contentContainer}>
+        <ThemedView style={styles.headerContainer}>
+          <ThemedText style={styles.title}>Smart Alarm</ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Wake up to your favorite sounds
+          </ThemedText>
+        </ThemedView>
+
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={navigateToAlarm}
+        >
+          <IconSymbol name="alarm" size={24} color="#fff" />
+          <ThemedText style={styles.buttonText}>Set Your Alarm</ThemedText>
+        </TouchableOpacity>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+
+      <ThemedText style={styles.footer}>
+        Create personalized alarms with custom sounds
+      </ThemedText>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: '#151718',
+    padding: 24,
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 48,
+  },
+  headerContainer: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  title: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: '#ECEDEE',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#9BA1A6',
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#2D6A4F',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+    shadowColor: '#2D6A4F',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  buttonText: {
+    color: '#ECEDEE',
+    fontSize: 18,
+    fontWeight: '600',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  footer: {
+    color: '#9BA1A6',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
   },
 });

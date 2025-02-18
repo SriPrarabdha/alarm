@@ -18,17 +18,17 @@ export default function TabLayout() {
       headerTintColor: '#ECEDEE',
     }}>
       <Tabs.Screen
-        name="alarm"
-        options={{
-          title: 'Alarm',
-          tabBarIcon: ({ color }) => <IconSymbol name="house.fill" color={color} size={24} />,
-        }}
-      />
-      <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol name="chevron.left.forwardslash.chevron.right" color={color} size={24} />,
+          tabBarIcon: ({ color }) => <IconSymbol name="house" color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="alarm"
+        options={{
+          title: 'Alarm',
+          tabBarIcon: ({ color }) => <IconSymbol name="alarm" color={color} size={24} />,
         }}
       />
       <Tabs.Screen
